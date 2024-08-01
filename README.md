@@ -1,3 +1,30 @@
+quick start
+```
+source venv/bin/activate
+doppler run -- python manage.py runserver
+```
+http://127.0.0.1:8000/api/hello/  
+get started
+```
+python3 -m venv venv
+source venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+export DOPPLER_TOKEN='dp.st.dev.'
+doppler run --config dev -- python manage.py runserver
+```
+instead of token
+```
+doppler login
+doppler setup
+```
+```
+export DOPPLER_TOKEN='dp.st.prd'
+```  
+doppler get started:  
+https://github.com/wusixuan0/seed-supabase/blob/main/README.md  
+
+tutorial steps:  
 ```
 touch django-api
 cd django-api
@@ -32,7 +59,12 @@ my-project/
 └── requirements.txt
 ```
 
+
 ```
 touch api/urls.py
 
 ```
+add app route to config/urls.py  
+add Hello World to api/urls.py  
+http://127.0.0.1:8000/api/hello/
+
