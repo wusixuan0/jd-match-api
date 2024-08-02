@@ -3,6 +3,10 @@ quick start
 source venv/bin/activate
 doppler run -- python manage.py runserver
 ```
+running with Gunicorn for render.
+```
+doppler run -- python -m gunicorn config.asgi:application -k uvicorn.workers.UvicornWorker
+```
 http://127.0.0.1:8000/api/hello/  
 get started
 ```
