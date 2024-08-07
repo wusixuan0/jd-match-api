@@ -1,7 +1,16 @@
 quick start
 ```
 source venv/bin/activate
-doppler run -- python manage.py runserver
+echo $DATABASE_URL
+export DATABASE_URL=
+python manage.py runserver
+```  
+```
+python manage.py makemigrations
+python manage.py migrate
+```
+```
+doppler run --config dev -- python manage.py runserver
 ```
 running with Gunicorn for render.
 ```
@@ -14,21 +23,49 @@ python3 -m venv venv
 source venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
-export DOPPLER_TOKEN='dp.st.dev.'
-doppler run --config dev -- python manage.py runserver
+export DATABASE_URL=
+echo $DATABASE_URL
+python manage.py migrate
+python manage.py runserver
 ```
-instead of token
+instead of token `export DOPPLER_TOKEN=`  
 ```
 doppler login
 doppler setup
-```
-```
-export DOPPLER_TOKEN='dp.st.prd'
 ```  
 doppler get started:  
 https://github.com/wusixuan0/seed-supabase/blob/main/README.md  
 
-tutorial steps:  
+match script overview:  
+A job matching system that takes a user's resume PDF as input and returns the top 5 best-matching job descriptions from a dataset of 51,863 job listings stored in OpenSearch, scraped from Google Jobs.   
+steps:  
+1. extract_resume function: One API call to Gemini API
+2. OpenSearch (ES) query: Retrieve 60 job descriptions based on extracted resume data.
+3. Rank by Gemini API, returns list of id
+4. Retrieve OpenSearch full records with list of id
+
+api structure   
+1. Extract the resume and save the API response to resume_summary in the model.
+2. Perform the OpenSearch query and Gemini API call, saving the returned response to job_id_list in the model.
+3. Retrieve OpenSearch full records with the list of IDs and send back the response.
+
+### api structure summary before adding match script  
+model.py:    
+MatchRecord model with fields resume_summary, job_id_list, created_at, updated_at
+
+views.py:  
+Import generics and define MatchRecordCreateView
+
+serializers.py:
+Define MatchRecordSerializer
+
+urls.py (app level):  
+Define urlpatterns for MatchRecordCreateView
+
+urls.py (project level):  
+Include the app's URLs
+
+### tutorial steps:  
 ```
 touch django-api
 cd django-api
