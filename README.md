@@ -28,6 +28,9 @@ echo $DATABASE_URL
 python manage.py migrate
 python manage.py runserver
 ```
+```
+pip freeze > requirements. txt
+```
 instead of token `export DOPPLER_TOKEN=`  
 ```
 doppler login
@@ -45,6 +48,30 @@ steps:
 4. Retrieve OpenSearch full records with list of id
 
 api structure   
+```
+my-project/
+├── config/
+│   ├── __init__.py
+│   ├── asgi.py
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+├── api/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations/
+│   ├── models.py
+│   ├── tests.py
+│   ├── views.py
+│   ├── services.py  # Add this file
+│   ├── utils.py     # Add this file for helper functions
+│   ├── serializers.py  
+│   └── urls.py      
+├── manage.py
+├── venv/
+└── requirements.txt
+```  
 1. Extract the resume and save the API response to resume_summary in the model.
 2. Perform the OpenSearch query and Gemini API call, saving the returned response to job_id_list in the model.
 3. Retrieve OpenSearch full records with the list of IDs and send back the response.
