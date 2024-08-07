@@ -1,3 +1,7 @@
+from datetime import datetime, timedelta
+import re
+import json
+
 def clean_text(text):
     # Remove HTML tags
     import re
@@ -14,8 +18,21 @@ def clean_text(text):
 
     return text
 
-from datetime import datetime, timedelta
-import re
+def extract_json_from_response(response_text):
+    json_pattern_with_json = re.compile(r'`json(.*?)`', re.DOTALL)  # Match content between ```json markers
+    json_pattern_backticks_only = re.compile(r'`(.*?)`', re.DOTALL)  # Match content between ``` markers
+
+    # Try to match with json prefix
+    match = json_pattern_with_json.search(response_text)
+    if match:
+        json_obj = json.loads(match.group(1))
+        return json_obj
+
+    # If not found, try to match with only backticks
+    match = json_pattern_backticks_only.search(response_text)
+    if match:
+        json_obj = json.loads(match.group(1))
+        return json_obj
 
 def extract_number(text):
   return re.search(r'\d+', text).group()

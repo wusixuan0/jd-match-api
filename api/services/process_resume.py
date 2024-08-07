@@ -1,4 +1,4 @@
-from .utils import clean_text, extract_number, date_calculator
+from .utils import clean_text, extract_json_from_response, extract_number, date_calculator
 import google.generativeai as genai
 import os
 from langchain_community.document_loaders import PyMuPDFLoader
@@ -8,12 +8,9 @@ genai.configure(api_key=GOOGLE_API_KEY)
 from langchain_community.document_loaders import PyMuPDFLoader
 
 def extract_resume(resume_url):
-    return resume_url
-    # summarize_resume(resume_url)
-
-def summarize_resume(resume_url):
     cleaned_text = load_pdf(resume_url)
-    resume_summary = summarize_and_infer(cleaned_text)
+    response = summarize_and_infer(cleaned_text)
+    resume_summary = extract_json_from_response(response)
     return resume_summary
 
 def summarize_and_infer(cleaned_text, is_resume=True, output_format="json", model='gemini-1.5-pro'):
