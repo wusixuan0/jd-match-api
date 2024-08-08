@@ -1,6 +1,6 @@
 services:
 - type: web
-  name: django-api
+  name: match-django-api
   runtime: python
   repo: https://github.com/wusixuan0/jd-match-api
   plan: free
