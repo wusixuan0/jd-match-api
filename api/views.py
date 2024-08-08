@@ -1,13 +1,22 @@
+import os
+import time
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-import os
 from supabase import create_client
+from django_ratelimit.decorators import ratelimit
 from api.services import resume_service
-import time
 
+
+@ratelimit(key='ip', rate='5/m', block=False)
 @api_view(['POST'])
 def resume_process(request):
+    if getattr(request, 'limited', False):
+        return Response(
+            {"error": "You have exceeded the request limit (5 requests per minute). Please try again later."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS
+        )
+
     file_obj = request.data.get('file')
     if not file_obj:
         return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
