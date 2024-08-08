@@ -1,9 +1,19 @@
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import status
+from rest_framework import serializers
 from rest_framework import generics
 from .models import MatchRecord
 from .serializers import MatchRecordSerializer
 from api.services import resume_service
+
+class ResumeProcessView(APIView):
+    def post(self, request):
+        url = request.data.get('url')
+
+        result = resume_service(url)
+        return Response(result, status=status.HTTP_200_OK)
 
 class HelloWorld(APIView):
     def get(self, request):

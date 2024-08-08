@@ -4,9 +4,8 @@ from .example_data import es_example, resume_summary_example, rank_example
 from .match_and_rank import rank_result
 from .es_query_jd_id import retrieve_jds
 
-USE_API = True
-USE_ES = True
-USE_ES_FINAL = True
+USE_API = False
+USE_ES = False
 
 def resume_service(resume_url):
     if USE_API:
@@ -29,9 +28,15 @@ def resume_service(resume_url):
     if USE_API:
         rank_id_list=rank_result(resume_summary, jd_list)
     else:
-        rank_id_list=rank_example()
+        rank_example = [
+            "QC85LpEBIvxPMcUyAMOd",
+            "Qy85LpEBIvxPMcUyAMOd",
+            "RC85LpEBIvxPMcUyAMOd",
+            "Ri85LpEBIvxPMcUyAMOd",
+            "SC85LpEBIvxPMcUyAMOd"
+        ]
+        rank_id_list=rank_example
     
-    if USE_ES_FINAL:
-        ranked_jds=retrieve_jds(rank_id_list)
+    ranked_jds=retrieve_jds(rank_id_list)
     
     return ranked_jds

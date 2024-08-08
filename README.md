@@ -4,6 +4,7 @@ source venv/bin/activate
 export DATABASE_URL=
 doppler run -- python manage.py runserver
 ```  
+https://dashboard.doppler.com/workplace/87fa3aecaa170026448c/projects/django-api/configs/dev  
 ```
 python manage.py makemigrations
 python manage.py migrate
