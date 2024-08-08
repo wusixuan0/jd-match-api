@@ -33,7 +33,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 ```
-pip freeze > requirements. txt
+pip freeze > requirements.txt
 ```
 use `export DOPPLER_TOKEN=` to access env var, or
 ```
