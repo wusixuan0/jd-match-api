@@ -1,9 +1,8 @@
 quick start
 ```
 source venv/bin/activate
-echo $DATABASE_URL
 export DATABASE_URL=
-python manage.py runserver
+doppler run -- python manage.py runserver
 ```  
 ```
 python manage.py makemigrations
@@ -25,13 +24,17 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 export DATABASE_URL=
 echo $DATABASE_URL
+echo $OPENSEARCH_USERNAME_HOST 
+echo $OPENSEARCH_USERNAME 
+echo $OPENSEARCH_PASSWORD 
+echo $GOOGLE_API_KEY
 python manage.py migrate
 python manage.py runserver
 ```
 ```
 pip freeze > requirements. txt
 ```
-instead of token `export DOPPLER_TOKEN=`  
+use `export DOPPLER_TOKEN=` to access env var, or
 ```
 doppler login
 doppler setup
@@ -64,7 +67,7 @@ my-project/
 │   ├── models.py
 │   ├── tests.py
 │   ├── views.py
-│   ├── services.py  # Add this file
+│   ├── services
 │   ├── utils.py     # Add this file for helper functions
 │   ├── serializers.py  
 │   └── urls.py      

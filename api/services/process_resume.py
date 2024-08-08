@@ -1,11 +1,10 @@
-from .utils import clean_text, extract_json_from_response, extract_number, date_calculator
+from .utils import clean_text, extract_json_from_response
 import google.generativeai as genai
 import os
 from langchain_community.document_loaders import PyMuPDFLoader
 
 GOOGLE_API_KEY=os.environ.get('GOOGLE_API_KEY')
 genai.configure(api_key=GOOGLE_API_KEY)
-from langchain_community.document_loaders import PyMuPDFLoader
 
 def extract_resume(resume_url):
     cleaned_text = load_pdf(resume_url)
