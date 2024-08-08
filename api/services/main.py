@@ -28,5 +28,4 @@ def resume_service(resume_url):
         rank_id_list=rank_example
     
     ranked_jds=retrieve_jds(rank_id_list)
-    
     return ranked_jds

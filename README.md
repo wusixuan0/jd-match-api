@@ -10,6 +10,10 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 ```
+import pdb
+pdb.set_trace()
+```
+```
 doppler run --config dev -- python manage.py runserver
 ```
 running with Gunicorn for render.

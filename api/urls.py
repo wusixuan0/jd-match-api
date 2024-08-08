@@ -1,8 +1,6 @@
-from django.urls import path, include
-from .views import ResumeProcessView, HelloWorld, MatchRecordCreateView
+from django.urls import path
+from . import views
 
 urlpatterns = [
-    path('match/', ResumeProcessView.as_view(), name='match-resume'),
-    path('hello/', HelloWorld.as_view(), name='hello_world'),
-    path('match_records/', MatchRecordCreateView.as_view(), name='match-record-list-create'),
+    path('match/', views.resume_process, name='match-resume'),
 ]
