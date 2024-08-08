@@ -41,7 +41,7 @@ def extract_es_response(es_jd_list):
     return summarized_jd_list
 
 def query_es_resume(resume_summary):    
-    query=build_query(resume_summary)
+    query=build_query(resume_summary, return_size=200, days_ago=30)
     add_location_filter(query, resume_summary)
     
     es_jd_list = query_es(query)

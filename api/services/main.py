@@ -3,7 +3,7 @@ from .es_query_resume import retrieve_jd
 from .match_and_rank import rank_result
 from .es_query_jd_id import retrieve_jds
 
-USE_API = False
+USE_API = True
 
 def resume_service(resume_url):
     if USE_API:
