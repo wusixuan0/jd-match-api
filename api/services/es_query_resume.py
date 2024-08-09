@@ -1,14 +1,14 @@
 from api.util.utils import clean_text, date_calculator
 from api.util.es_query import query_es
 
-def retrieve_jd(resume_summary):
+def retrieve_jd_by_resume(resume_summary):
     response = query_es_resume(resume_summary)
     
-    jd_list = extract_es_response(response)
-    return jd_list
+    jd_by_id_dict = extract_es_response(response)
+    return jd_by_id_dict
 
 def extract_es_response(es_jd_list):
-    summarized_jd_list = {}
+    jd_by_id_dict = {}
 
     for hit in es_jd_list:
         id = hit['_id']
@@ -37,8 +37,8 @@ def extract_es_response(es_jd_list):
             extracted["description"] = clean_text(job_data.get("description"))
 
         jd_text = " ".join(key + ':' + str(value) for key, value in extracted.items())
-        summarized_jd_list[id] = jd_text
-    return summarized_jd_list
+        jd_by_id_dict[id] = jd_text
+    return jd_by_id_dict
 
 def query_es_resume(resume_summary):    
     query=build_query(resume_summary, return_size=200, days_ago=30)

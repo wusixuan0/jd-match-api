@@ -4,8 +4,8 @@ from api.util.utils import extract_json_from_response
 GOOGLE_API_KEY=os.environ.get('GOOGLE_API_KEY')
 genai.configure(api_key=GOOGLE_API_KEY)
 
-def rank_result(resume_summary, jd_list):
-    rank_result_llm = match_and_rank(resume_summary, jd_list, top_n=5)
+def rank_result(resume_summary, jd_by_id_dict):
+    rank_result_llm = match_and_rank(resume_summary, jd_by_id_dict, top_n=5)
     rank_result = extract_json_from_response(rank_result_llm)
     return rank_result
 
