@@ -7,6 +7,7 @@ from supabase import create_client
 from django_ratelimit.decorators import ratelimit
 from api.services import resume_service
 
+TEST = 'RENDER' not in os.environ
 
 @ratelimit(key='ip', rate='5/m', block=False)
 @api_view(['POST'])
@@ -16,11 +17,16 @@ def resume_process(request):
             {"error": "You have exceeded the request limit (5 requests per minute). Please try again later."},
             status=status.HTTP_429_TOO_MANY_REQUESTS
         )
-
-    file_obj = request.data.get('file')
-    version = request.data.get('version') or 'version1'
     
-    if not file_obj:
+    version = request.data.get('version') or 'version1'
+ 
+    if TEST:
+        result = resume_service(os.environ.get("RESUME_URL_EXAMPLE"), version)
+        return Response({"ranked_jds": result}, status=status.HTTP_200_OK)
+    
+    file_obj = request.data.get('file')
+    
+    if not file_obj: # TODO test exception, refactor
         return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
 
     upload_result = upload(file_obj)
