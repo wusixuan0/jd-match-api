@@ -18,17 +18,18 @@ def resume_process(request):
         )
 
     file_obj = request.data.get('file')
+    version = request.data.get('version') or 'version1'
+    
     if not file_obj:
         return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
 
     upload_result = upload(file_obj)
 
     if isinstance(upload_result, str):
-        result = resume_service(upload_result)
+        result = resume_service(upload_result, version)
         return Response({"ranked_jds": result}, status=status.HTTP_200_OK)
     else:
         return Response({"error": str(upload_result)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 def upload(file_obj):
     SUPABASE_URL = os.environ.get('SUPABASE_URL')

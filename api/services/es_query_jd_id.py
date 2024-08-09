@@ -1,5 +1,5 @@
-from .utils import clean_text, date_calculator
-from .es_query import query_es
+from api.util.utils import clean_text, date_calculator
+from api.util.es_query import query_es
 
 def retrieve_jds(rank_id_list):    
     query = {

@@ -1,6 +1,6 @@
 import google.generativeai as genai
 import os
-from .utils import clean_text, extract_json_from_response
+from api.util.utils import extract_json_from_response
 GOOGLE_API_KEY=os.environ.get('GOOGLE_API_KEY')
 genai.configure(api_key=GOOGLE_API_KEY)
 

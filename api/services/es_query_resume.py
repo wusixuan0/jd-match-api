@@ -1,5 +1,5 @@
-from .utils import clean_text, date_calculator
-from .es_query import query_es
+from api.util.utils import clean_text, date_calculator
+from api.util.es_query import query_es
 
 def retrieve_jd(resume_summary):
     response = query_es_resume(resume_summary)

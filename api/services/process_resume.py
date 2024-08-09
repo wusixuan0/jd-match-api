@@ -1,4 +1,4 @@
-from .utils import clean_text, extract_json_from_response
+from api.util.utils import clean_text, extract_json_from_response
 import google.generativeai as genai
 import os
 from langchain_community.document_loaders import PyMuPDFLoader
