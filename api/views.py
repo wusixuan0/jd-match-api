@@ -60,7 +60,7 @@ def upload(file_obj):
         
         S3_URL = os.environ.get('S3_URL')
         file_url=f"{S3_URL}{file_key}"
-        print(f'File uploaded with url: {file_key}')
+        send_log(f'File uploaded with url: {file_key}')
         return file_url
     except Exception as e:
         return e

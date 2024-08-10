@@ -83,13 +83,14 @@ TEMPLATES = [
     },
 ]
 
-ASGI_APPLICATION = 'config.wsgi.application'
+ASGI_APPLICATION = 'config.asgi.application'
 
 CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     "https://jd-match.netlify.app",
+    "https://match-django-api-98fq.onrender.com",
     os.environ.get('FRONT_END_URL'),
 ]
 
