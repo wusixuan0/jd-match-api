@@ -2,6 +2,9 @@ from api.util.utils import clean_text, extract_json_from_response
 import google.generativeai as genai
 import os
 from langchain_community.document_loaders import PyMuPDFLoader
+from datetime import datetime
+import time
+from .send_log import send_log
 
 GOOGLE_API_KEY=os.environ.get('GOOGLE_API_KEY')
 genai.configure(api_key=GOOGLE_API_KEY)
@@ -32,11 +35,19 @@ def summarize_and_infer(cleaned_text, is_resume=True, output_format="json", mode
     { career_goal if is_resume else company_culture}
     {'resume' if is_resume else 'job description'} text:
     """
-
-    print(prompt + cleaned_text)
+    
+    start_time = time.time()
+    start_time_datetime = datetime.now().strftime('%Y-%m-%d %I:%M:%S %p')
+    send_log(f"summarize resume by Gemini start at {start_time_datetime}")
+    send_log(f"prompt: {prompt}")
 
     model = genai.GenerativeModel(model)
     response = model.generate_content(prompt + cleaned_text)
+    end_time = time.time()
+    end_time_datetime = datetime.now().strftime('%Y-%m-%d %I:%M:%S %p')
+    duration = end_time - start_time
+    send_log(f"Gemini request return at: {end_time_datetime}")
+    send_log(f"request Duration: {duration} seconds")
     return response.text
 
 def load_pdf(url):

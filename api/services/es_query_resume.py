@@ -1,5 +1,6 @@
 from api.util.utils import clean_text, date_calculator
 from api.util.es_query import query_es
+from .send_log import send_log
 
 def retrieve_jd_by_resume(resume_summary, return_size, days_ago):
     response = query_es_resume(resume_summary, return_size, days_ago)
@@ -43,7 +44,7 @@ def extract_es_response(es_jd_list):
 def query_es_resume(resume_summary, return_size, days_ago):    
     query=build_query(resume_summary, return_size, days_ago)
     add_location_filter(query, resume_summary)
-    
+    # send_log(query)
     es_jd_list = query_es(query)
     return es_jd_list
     
@@ -54,7 +55,7 @@ def filter_locations(resume_locations):
 def add_location_filter(query, resume_summary):
     if city_locations := resume_summary.get('location'):
         valid_locations = filter_locations(city_locations)
-        print("valid location in ES:",valid_locations)
+        send_log(f"valid location in OpenSearch: {valid_locations}")
         if valid_locations:
             query["query"]["bool"]["filter"].append({
                 "match": {"location": valid_locations}

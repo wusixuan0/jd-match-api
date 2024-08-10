@@ -1,7 +1,6 @@
-# TODO: move to util folder
-
 import os
 from opensearchpy import OpenSearch
+from api.services import send_log
 
 def query_es(query):
     host = os.environ.get('OPENSEARCH_USERNAME_HOST')
@@ -26,6 +25,6 @@ def query_es(query):
     response = es_client.search(index=ES_JOB_INDEX, body=query)
     total_hits = response['hits']['total']['value']
     retried_doc = response['hits']['hits']
-    print(f"documents that match query criteria: {total_hits}")
-    print(f"number of retried documents: {len(retried_doc)}")
+    # send_log(f"documents that match query criteria: {total_hits}")
+    # send_log(f"number of retried documents: {len(retried_doc)}")
     return retried_doc

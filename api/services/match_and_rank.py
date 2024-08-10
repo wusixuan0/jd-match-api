@@ -1,6 +1,10 @@
 import google.generativeai as genai
 import os
+from datetime import datetime
+import time
 from api.util.utils import extract_json_from_response
+from .send_log import send_log
+
 GOOGLE_API_KEY=os.environ.get('GOOGLE_API_KEY')
 genai.configure(api_key=GOOGLE_API_KEY)
 
@@ -21,5 +25,15 @@ def match_and_rank(resume_summary, job_summaries, top_n=5):
     """
 
     model = genai.GenerativeModel('gemini-1.5-flash')
+
+    start_time = time.time()
+    start_time_datetime = datetime.now().strftime('%Y-%m-%d %I:%M:%S %p')
+    send_log(f"starting final match and rank by Gemini at {start_time_datetime}")
+
     response = model.generate_content(prompt)
+    end_time = time.time()
+    end_time_datetime = datetime.now().strftime('%Y-%m-%d %I:%M:%S %p')
+    duration = end_time - start_time
+    send_log(f"Gemini request return at: {end_time_datetime}")
+    send_log(f"request Duration: {duration} seconds")
     return response.text
