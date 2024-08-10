@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-d@d6v)r5r2p#&)wh%r+8w4*v4i-whbh)%h*qd8gsei&ljhwj$_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = 'RENDER' not in os.environ
 
-ALLOWED_HOSTS = [ '127.0.0.1']
+ALLOWED_HOSTS = [ 'localhost', '127.0.0.1']
 
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
@@ -47,8 +47,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'api',
     'corsheaders',
+    'channels',
 ]
-
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",  # For development/testing. Use Redis for production.
+    },
+}
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -121,13 +126,6 @@ DATABASES = {
 #         conn_health_checks=True,
 #     ),
 # }
-
-from django.db import connections
-def check_database_connection():
-    connections['default'].cursor()
-    print(f"Database connected: {os.getenv('DATABASE_URL')}")
-
-check_database_connection()
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

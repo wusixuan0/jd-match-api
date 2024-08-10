@@ -12,6 +12,7 @@ def semantic_search(jd_by_id_dict, resume_summary, k_splits=1000):
     fused_score_by_id = weighted_reciprocal_rank_fusion(similar_by_field)
     ranked_fused_score_by_id = dict(sorted(fused_score_by_id.items(), key = lambda x: x[1], reverse = True))
     print("fused score", ranked_fused_score_by_id)
+    print("num of jd from semantic search ",len(ranked_fused_score_by_id))
 
     filtered_jd_by_id_dict = filter_dictionary_by_ranked_ids(jd_by_id_dict, ranked_fused_score_by_id.keys())
 
@@ -54,8 +55,6 @@ def retrieve_from_vectorstore(vectorstore: Chroma, resume_summary, k: int):
     return similar_by_field
 
 def embed(splits):
-    if "GOOGLE_API_KEY" not in os.environ: # TODO move to util
-        os.environ["GOOGLE_API_KEY"] = getpass("Provide your Google API key here")
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
     vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
     return vectorstore

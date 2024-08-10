@@ -100,10 +100,17 @@ my-project/
 │   ├── apps.py
 │   ├── migrations/
 │   ├── models.py
-│   ├── tests.py
+│   ├── routing.py
+│   ├── consumers.py
 │   ├── views.py
 │   ├── services # script for assess, match and rank jd
+│       ├── main.py
+│       ├── match_and_rank.py
+│       ├── more
+│       ├── more
 │   ├── utils # helper functions
+│       ├── utils.py
+│       ├── es_query.py
 │   ├── serializers.py  
 │   └── urls.py      
 ├── manage.py
