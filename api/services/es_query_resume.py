@@ -1,12 +1,20 @@
 from api.util.utils import clean_text, date_calculator
 from api.util.es_query import query_es
-from .send_log import send_log
+from api.util.send_log import send_log
 
-def retrieve_jd_by_resume(resume_summary, return_size, days_ago):
-    response = query_es_resume(resume_summary, return_size, days_ago)
+def opensearch_get_jd_by_resume(resume_summary, return_size, days_ago):
+    send_log(">>>Starting to retrieve job descriptions from OpenSearch index with extracted resume data")
+
+    es_query_resume = {
+        "target job titles": resume_summary.get('target job titles'),
+        "skills": resume_summary.get('skills'),
+        "location": resume_summary.get('city'),
+    }
+    es_retrived_document_list = query_es_resume(es_query_resume, return_size, days_ago)
     
-    jd_by_id_dict = extract_es_response(response)
-    return jd_by_id_dict
+    jd_by_id_dict = extract_es_response(es_retrived_document_list)
+
+    return jd_by_id_dict, es_retrived_document_list
 
 def extract_es_response(es_jd_list):
     jd_by_id_dict = {}
@@ -44,7 +52,6 @@ def extract_es_response(es_jd_list):
 def query_es_resume(resume_summary, return_size, days_ago):    
     query=build_query(resume_summary, return_size, days_ago)
     add_location_filter(query, resume_summary)
-    # send_log(query)
     es_jd_list = query_es(query)
     return es_jd_list
     
@@ -55,7 +62,7 @@ def filter_locations(resume_locations):
 def add_location_filter(query, resume_summary):
     if city_locations := resume_summary.get('location'):
         valid_locations = filter_locations(city_locations)
-        send_log(f"valid location in OpenSearch: {valid_locations}")
+        send_log(f"Found valid location for OpenSearch index in extracted resume: {valid_locations}")
         if valid_locations:
             query["query"]["bool"]["filter"].append({
                 "match": {"location": valid_locations}

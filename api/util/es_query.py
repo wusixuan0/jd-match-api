@@ -1,6 +1,8 @@
 import os
 from opensearchpy import OpenSearch
-from api.services import send_log
+import time
+from datetime import datetime
+from .send_log import send_log
 
 def query_es(query):
     host = os.environ.get('OPENSEARCH_USERNAME_HOST')
@@ -21,10 +23,18 @@ def query_es(query):
     )
 
     ES_JOB_INDEX = 'swifthire_jobs_dev'
-
+    
+    start_time = time.time()
+    start_time_datetime = datetime.now().strftime('%Y-%m-%d %I:%M:%S %p')
+    send_log(f"OpenSearch query start at {start_time_datetime}")
+    send_log(f"OpenSearch query: {str(query)}")
     response = es_client.search(index=ES_JOB_INDEX, body=query)
+    end_time = time.time()
+    duration = end_time - start_time
     total_hits = response['hits']['total']['value']
-    retried_doc = response['hits']['hits']
-    # send_log(f"documents that match query criteria: {total_hits}")
-    # send_log(f"number of retried documents: {len(retried_doc)}")
-    return retried_doc
+    retrived_doc = response['hits']['hits']
+    
+    send_log(f"OpenSearch Request Duration: {duration} seconds")
+    send_log(f"documents that match query criteria: {total_hits}")
+    send_log(f"<<<number of retrived documents: {len(retrived_doc)}")
+    return retrived_doc

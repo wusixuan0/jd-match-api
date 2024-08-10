@@ -5,14 +5,15 @@ from rest_framework.response import Response
 from rest_framework import status
 from supabase import create_client
 from django_ratelimit.decorators import ratelimit
-from api.services import resume_service, send_log
+from api.services import resume_service
+from api.util.send_log import send_log
 
-TEST = 'RENDER' not in os.environ
+# TEST = 'RENDER' not in os.environ
 
 @ratelimit(key='ip', rate='5/m', block=False)
 @api_view(['POST'])
 def resume_process(request):
-    send_log("uploading resume pdf to s3 bucket.")
+    send_log(">>>Uploading Resume PDF File to S3 bucket.")
     if getattr(request, 'limited', False):
         return Response(
             {"error": "You have exceeded the request limit (5 requests per minute). Please try again later."},
@@ -21,9 +22,9 @@ def resume_process(request):
     
     version = request.data.get('version') or 'version1'
 
-    if TEST:
-        result = resume_service(os.environ.get("RESUME_URL_EXAMPLE"), version)
-        return Response({"ranked_jds": result}, status=status.HTTP_200_OK)
+    # if TEST:
+    #     result = resume_service(os.environ.get("RESUME_URL_EXAMPLE"), version, model_name='gemini-1.5-pro', top_n=5)
+    #     return Response({"ranked_jds": result}, status=status.HTTP_200_OK)
     
     file_obj = request.data.get('file')
     
@@ -33,9 +34,7 @@ def resume_process(request):
     upload_result = upload(file_obj)
 
     if isinstance(upload_result, str):
-        send_log("resume pdf uploaded.")
-
-        result = resume_service(upload_result, version)
+        result = resume_service(upload_result, version, model_name='gemini-1.5-flash', top_n=5)
         return Response({"ranked_jds": result}, status=status.HTTP_200_OK)
     else:
         return Response({"error": str(upload_result)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -60,7 +59,7 @@ def upload(file_obj):
         
         S3_URL = os.environ.get('S3_URL')
         file_url=f"{S3_URL}{file_key}"
-        send_log(f'File uploaded with url: {file_key}')
+        send_log(f'<<<File Uploaded with file key: {file_name}')
         return file_url
     except Exception as e:
         return e

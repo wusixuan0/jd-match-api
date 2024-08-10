@@ -1,24 +1,19 @@
-from .process_resume import extract_resume
-from .es_query_resume import retrieve_jd_by_resume
+from .extract_resume import extract_resume
+from .es_query_resume import opensearch_get_jd_by_resume
 from .match_and_rank import rank_result
-from .es_query_jd_id import retrieve_jd_by_id
 from .semantic_search import semantic_search
-from .send_log import send_log
+from api.util.send_log import send_log
+import pdb
 
-def resume_service(resume_url, version):
-    resume_summary = extract_resume(resume_url)
-    es_query_resume = {
-        "target job titles": resume_summary.get('target job titles'),
-        "skills": resume_summary.get('skills'),
-        "location": resume_summary.get('city'),
-    }
-    jd_by_id_dict = retrieve_jd_by_resume(es_query_resume, return_size=300, days_ago=7)
+def resume_service(resume_url, version, model_name, top_n=5):
+    resume_summary = extract_resume(resume_url, model_name)
+    jd_by_id_dict, es_retrived_document_list = opensearch_get_jd_by_resume(resume_summary, return_size=300, days_ago=7)
 
     if version == "version2":
-        filtered_jd_by_id_dict=semantic_search(jd_by_id_dict, resume_summary, k_splits=1000)
-        rank_id_list = rank_result(resume_summary, filtered_jd_by_id_dict)
+        filtered_jd_by_id_dict=semantic_search(jd_by_id_dict, resume_summary)
+        llm_ranked_id_list = rank_result(resume_summary, filtered_jd_by_id_dict, model_name, top_n, version)
     if version == "version1":        
-        rank_id_list = rank_result(resume_summary, jd_by_id_dict)
-
-    ranked_jds=retrieve_jd_by_id(rank_id_list)
-    return ranked_jds
+        llm_ranked_id_list = rank_result(resume_summary, jd_by_id_dict, model_name, top_n, version)
+    
+    ranked_es_document_list = [item for item in es_retrived_document_list if item['_id'] in llm_ranked_id_list]
+    return ranked_es_document_list
