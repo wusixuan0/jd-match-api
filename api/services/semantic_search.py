@@ -1,7 +1,7 @@
 from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain_chroma import Chroma
+from langchain.vectorstores import FAISS
 from .send_log import send_log
 
 def semantic_search(jd_by_id_dict, resume_summary, k_splits=1000):
@@ -46,19 +46,20 @@ def weighted_reciprocal_rank_fusion(similar_by_field, k=60):
             fused_scores[id] += field_weight * (1 / (rank + k))
     return fused_scores
 
-def retrieve_from_vectorstore(vectorstore: Chroma, resume_summary, k: int):
+def retrieve_from_vectorstore(vectorstore, resume_summary, k):
     similar_by_field = {}
     qualifications=f"{resume_summary.get('skills')} {resume_summary.get('qualifications')}"
-    similar_by_field['qualifications'] = vectorstore.similarity_search(qualifications, k)
+    num_chunks = vectorstore.index.ntotal
+    send_log(f"Number of chunks in the vectorstore: {num_chunks}")
+   
+    similar_by_field['qualifications'] = vectorstore.similarity_search(qualifications, min(num_chunks,k))
     if resume_summary.get('career goal'):
-        similar_by_field['career goal'] = vectorstore.similarity_search(resume_summary.get('career goal'), min(vectorstore.count(),k))
+        similar_by_field['career goal'] = vectorstore.similarity_search(resume_summary.get('career goal'), min(num_chunks,k))
     return similar_by_field
 
 def embed(splits):
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-    vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
-    num_chunks = vectorstore.count() 
-    send_log(f"Number of chunks in the vectorstore: {num_chunks}")
+    vectorstore = FAISS.from_documents(splits, embeddings)
     return vectorstore
 
 def split(jd_by_id_dict):
