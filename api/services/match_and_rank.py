@@ -26,7 +26,7 @@ def match_and_rank(resume_summary, job_summaries, model_name, top_n=5, version='
         job summaries:{job_summaries}
     """
     send_log(f"Gemini API Request Prompt: \n{prompt}")
-    send_log(f"match data in Gemini API pay load has {len(match_data)}character")
+    send_log(f"match data in Gemini API pay load has {len(match_data)} character.")
     pay_load = prompt + match_data
     response_data = requestGeminiAPI(pay_load, model_name)
     return response_data
