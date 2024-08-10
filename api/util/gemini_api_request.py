@@ -21,8 +21,8 @@ def requestGeminiAPI(request_payload, model_name='gemini-1.5-flash'):
         end_time = time.time()
         duration = end_time - start_time
 
-        send_log(f"Gemini API Request Duration: {duration} seconds")
-        send_log(f"<<<Gemini API Response: \n{response_data}")
+        send_log(f"Gemini API Response: \n{response_data}")
+        send_log(f"<<<Gemini API Request Finished. Duration: {duration} seconds")
         return response_data
     except Exception as e:
         retry_attempt += 1
