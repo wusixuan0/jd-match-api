@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-d@d6v)r5r2p#&)wh%r+8w4*v4i-whbh)%h*qd8gsei&ljhwj$_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = 'RENDER' not in os.environ
 
-ALLOWED_HOSTS = [ 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['match-django-api-98fq.onrender.com', 'localhost', '127.0.0.1']
 
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
@@ -56,8 +56,8 @@ CHANNEL_LAYERS = {
 }
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -83,14 +83,15 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
+ASGI_APPLICATION = 'config.wsgi.application'
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_ALL_ORIGINS = True
 
-# CORS_ALLOWED_ORIGINS = [
-#     'http://localhost:3000',
-#     os.environ.get('FRONT_END_URL'),
-# ]
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    "https://jd-match.netlify.app",
+    os.environ.get('FRONT_END_URL'),
+]
 
 CORS_ALLOW_METHODS = [
     'DELETE',

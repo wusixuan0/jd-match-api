@@ -2,7 +2,7 @@ https://jd-match.netlify.app/
 quick start
 ```
 source venv/bin/activate
-doppler run -- python manage.py runserver
+doppler run -- uvicorn config.asgi:application --workers 1
 ```  
 add new env var to doppler: https://dashboard.doppler.com/workplace/87fa3aecaa170026448c/projects/django-api/configs/dev  
 ```
