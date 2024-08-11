@@ -15,5 +15,5 @@ def resume_service(resume_url, version, model_name, top_n=5):
     if version == "version1":        
         llm_ranked_id_list = rank_result(resume_summary, jd_by_id_dict, model_name, top_n, version)
     
-    ranked_es_document_list = [item for item in es_retrived_document_list if item['_id'] in llm_ranked_id_list]
+    ranked_es_document_list = [next(item for item in es_retrived_document_list if item['_id'] == jd_id) for jd_id in llm_ranked_id_list]
     return ranked_es_document_list
