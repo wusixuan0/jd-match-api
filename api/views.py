@@ -8,7 +8,7 @@ from django_ratelimit.decorators import ratelimit
 from api.services import resume_service
 from api.util.send_log import send_log
 
-# TEST = 'RENDER' not in os.environ
+TEST = 'RENDER' not in os.environ
 
 @ratelimit(key='ip', rate='5/m', block=False)
 @api_view(['POST'])
@@ -21,10 +21,11 @@ def resume_process(request):
         )
     
     version = request.data.get('version') or 'version1'
+    model_name = request.data.get('model_name') or 'gemini-1.5-flash'
 
-    # if TEST:
-    #     result = resume_service(os.environ.get("RESUME_URL_EXAMPLE"), version, model_name='gemini-1.5-pro', top_n=5)
-    #     return Response({"ranked_jds": result}, status=status.HTTP_200_OK)
+    if TEST:
+        result = resume_service(os.environ.get("RESUME_URL_EXAMPLE"), version, model_name, top_n=5)
+        return Response({"ranked_jds": result}, status=status.HTTP_200_OK)
     
     file_obj = request.data.get('file')
     
@@ -34,7 +35,7 @@ def resume_process(request):
     upload_result = upload(file_obj)
 
     if isinstance(upload_result, str):
-        result = resume_service(upload_result, version, model_name='gemini-1.5-flash', top_n=5)
+        result = resume_service(upload_result, version, model_name, top_n=5)
         return Response({"ranked_jds": result}, status=status.HTTP_200_OK)
     else:
         return Response({"error": str(upload_result)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

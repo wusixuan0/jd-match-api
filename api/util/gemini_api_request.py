@@ -26,9 +26,9 @@ def requestGeminiAPI(request_payload, model_name='gemini-1.5-flash'):
         return response_data
     except Exception as e:
         retry_attempt += 1
-        send_log(f"Gemini API ERROR: {e}")
-        if retry_attempt:
-            send_log(f"<<<Stoping Gemini API request after 1 failed attempt")
+        send_log(f"!!!Gemini API ERROR: {e}")
+        if retry_attempt > 1:
+            send_log(f"<<<Stoping Gemini API request with model  {model_name} after 1 failed attempt.")
             raise e
         retry_wait = 60
         send_log(f"Retrying API request in {retry_wait} seconds...")

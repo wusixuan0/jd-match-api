@@ -7,7 +7,7 @@ import json
 def extract_resume(resume_url, model_name):
     send_log(">>>Starting to extract resume data")
     resume_text = load_pdf(resume_url)
-    response = summarize_and_infer(resume_text, model_name, is_resume=True)
+    response = summarize_and_infer(resume_text, model_name='gemini-1.5-flash', is_resume=True)
     resume_summary = extract_json_from_response(response)
     return resume_summary
     
