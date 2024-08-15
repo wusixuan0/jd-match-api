@@ -3,6 +3,8 @@ import time
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 from supabase import create_client
 from django_ratelimit.decorators import ratelimit
 from api.services import resume_service
@@ -68,30 +70,57 @@ def resume_process(request):
 
 @api_view(['POST'])
 def feedback(request):
-    Response(status=status.HTTP_200_OK) 
+    user_email_id = request.data.get('email_id')
+    if user_email_id:
+        user_email = UserEmail.objects.get(id=user_email_id)
+        UserFeedback.objects.create(user_email=user_email,applied_job_ids=request.data.get('applied'),user_ranking=request.data.get('rankings'),)
+    else:
+        temp_transaction = TemporaryTransaction.objects.get(id=request.data.get('transaction_id'))
+        UserFeedback.objects.create(temporary_transaction=temp_transaction,applied_job_ids=request.data.get('applied'),user_ranking=request.data.get('rankings'),)
+    return Response({"message": "Feedback successful"}, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def subscribe(request):
-    transaction_id=request.data.get('transaction_id')
-    email=request.data.get('email')
-    frequency=request.data.get('frequency')
+    try:
+        with transaction.atomic():
+            transaction_id = request.data.get('transaction_id')
+            email = request.data.get('email')
+            frequency = request.data.get('frequency')
 
-    temp_transaction = TemporaryTransaction.objects.get(id=transaction_id)
-    temp_transaction.file_url
-    temp_transaction.file_summary
-    temp_transaction.ranked_ids
-    user_email = UserEmail.objects.create(email=email, frequency=frequency)
-    resume = Resume.objects.create(user_email=user_email,resume_url=temp_transaction.file_url,resume_summary=temp_transaction.file_summary)
+            if not all([transaction_id, email, frequency]):
+                return Response({"error": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
 
-    JobRecommendation.objects.create(
+            try:
+                temp_transaction = TemporaryTransaction.objects.get(id=transaction_id)
+            except ObjectDoesNotExist:
+                return Response({"error": "Invalid transaction ID"}, status=status.HTTP_404_NOT_FOUND)
+
+            user_email = UserEmail.objects.create(email=email, frequency=frequency)
+            resume = Resume.objects.create(
+                user_email=user_email,
+                resume_url=temp_transaction.file_url,
+                resume_summary=temp_transaction.file_summary
+            )
+            JobRecommendation.objects.create(
+                user_email=user_email,
+                resume=resume,
+                ranked_job_ids=temp_transaction.ranked_ids,
+            )
+            convert_feedback_to_permanent(temp_transaction, user_email)
+            temp_transaction.delete()
+
+            # Add EmailService logic
+
+        return Response({"message": "Subscription successful","email_id": user_email.id}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+def convert_feedback_to_permanent(temp_transaction, user_email):
+    UserFeedback.objects.filter(temporary_transaction=temp_transaction).update(
         user_email=user_email,
-        resume=resume,
-        ranked_job_ids=temp_transaction.ranked_ids,
+        temporary_transaction=None
     )
-    temp_transaction.delete()
-
-    Response(status=status.HTTP_200_OK) 
-    
+ 
 def upload(file_obj):
     SUPABASE_URL = os.environ.get('SUPABASE_URL')
     SUPABASE_ANON_KEY = os.environ.get('SUPABASE_ANON_KEY')

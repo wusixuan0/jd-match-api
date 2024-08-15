@@ -34,7 +34,7 @@ class UserFeedback(models.Model):
             models.CheckConstraint(
                 check=(
                     models.Q(temporary_transaction__isnull=False) |
-                    models.Q(user__isnull=False)
+                    models.Q(user_email__isnull=False)
                 ),
                 name='feedback_has_temporary_transaction_or_user'
             )

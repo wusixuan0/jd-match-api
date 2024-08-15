@@ -11,7 +11,7 @@ TEST = 'RENDER' not in os.environ
 def resume_service(resume_url, version, model_name, top_n=5):
     if TEST:
         send_log("test")
-        ranked_ids=['9S_SQpEBIvxPMcUyMsVw']
+        ranked_ids=["YS8jTZEBIvxPMcUySMeb", "Gi9JUpEBIvxPMcUyA8jQ", "_i9iM5EBIvxPMcUyymMPQ", "hi-EOJEBIvxPMcUyXMRA", "yC_7R5EBIvxPMcUyz8ah"]
         ranked_es_document_list=opensearch_get_jd_by_id(ranked_ids)
 
         return {
