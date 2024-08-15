@@ -10,6 +10,7 @@ from django_ratelimit.decorators import ratelimit
 from api.services import resume_service
 from api.util.send_log import send_log
 from .models import TemporaryTransaction, UserEmail, Resume, JobRecommendation, UserFeedback
+from api.email_services.mailchimp_service import subscribe_user_to_list
 import pdb
 
 TEST = 'RENDER' not in os.environ
@@ -109,7 +110,7 @@ def subscribe(request):
             convert_feedback_to_permanent(temp_transaction, user_email)
             temp_transaction.delete()
 
-            # Add EmailService logic
+            subscribe_user_to_list(email)
 
         return Response({"message": "Subscription successful","email_id": user_email.id}, status=status.HTTP_200_OK)
     except Exception as e:
