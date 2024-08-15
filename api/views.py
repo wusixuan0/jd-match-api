@@ -7,6 +7,8 @@ from supabase import create_client
 from django_ratelimit.decorators import ratelimit
 from api.services import resume_service
 from api.util.send_log import send_log
+from .models import TemporaryTransaction, UserEmail, Resume, JobRecommendation, UserFeedback
+import pdb
 
 TEST = 'RENDER' not in os.environ
 
@@ -24,9 +26,23 @@ def resume_process(request):
     model_name = request.data.get('model_name') or 'gemini-1.5-flash'
 
     if TEST:
-        result = resume_service(os.environ.get("RESUME_URL_EXAMPLE"), version, model_name, top_n=5)
-        return Response({"ranked_jds": result}, status=status.HTTP_200_OK)
-    
+        upload_result = os.environ.get("RESUME_URL_EXAMPLE")
+        match_result = resume_service(upload_result, version, model_name, top_n=5)
+
+        temp_transaction = TemporaryTransaction.objects.create(
+            file_url=upload_result,
+            file_summary=match_result.get("resume_summary"),
+            ranked_ids= match_result.get("ranked_ids"),
+        )
+
+        ranked_docs = match_result.get("ranked_docs")
+        return Response(
+            {
+                "ranked_jds": ranked_docs,
+                "transaction_id": temp_transaction.id,
+        }, status=status.HTTP_200_OK)
+
+
     file_obj = request.data.get('file')
     
     if not file_obj: # TODO test exception, refactor
@@ -34,12 +50,48 @@ def resume_process(request):
 
     upload_result = upload(file_obj)
 
-    if isinstance(upload_result, str):
-        result = resume_service(upload_result, version, model_name, top_n=5)
-        return Response({"ranked_jds": result}, status=status.HTTP_200_OK)
+    if isinstance(upload_result, str):        
+        match_result = resume_service(upload_result, version, model_name, top_n=5)
+        temp_transaction = TemporaryTransaction.objects.create(
+            file_url=upload_result,
+            file_summary=match_result.get("resume_summary"),
+            ranked_ids= match_result.get("ranked_ids"),
+        )
+        ranked_docs = match_result.get("ranked_docs")
+        return Response(
+            {
+                "ranked_jds": ranked_docs,
+                "transaction_id": temp_transaction.id,
+        }, status=status.HTTP_200_OK)
     else:
         return Response({"error": str(upload_result)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['POST'])
+def feedback(request):
+    Response(status=status.HTTP_200_OK) 
+
+@api_view(['POST'])
+def subscribe(request):
+    transaction_id=request.data.get('transaction_id')
+    email=request.data.get('email')
+    frequency=request.data.get('frequency')
+
+    temp_transaction = TemporaryTransaction.objects.get(id=transaction_id)
+    temp_transaction.file_url
+    temp_transaction.file_summary
+    temp_transaction.ranked_ids
+    user_email = UserEmail.objects.create(email=email, frequency=frequency)
+    resume = Resume.objects.create(user_email=user_email,resume_url=temp_transaction.file_url,resume_summary=temp_transaction.file_summary)
+
+    JobRecommendation.objects.create(
+        user_email=user_email,
+        resume=resume,
+        ranked_job_ids=temp_transaction.ranked_ids,
+    )
+    temp_transaction.delete()
+
+    Response(status=status.HTTP_200_OK) 
+    
 def upload(file_obj):
     SUPABASE_URL = os.environ.get('SUPABASE_URL')
     SUPABASE_ANON_KEY = os.environ.get('SUPABASE_ANON_KEY')

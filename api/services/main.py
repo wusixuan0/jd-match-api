@@ -3,9 +3,22 @@ from .es_query_resume import opensearch_get_jd_by_resume
 from .match_and_rank import rank_result
 from .semantic_search import semantic_search
 from api.util.send_log import send_log
-import pdb
+from api.util.es_query_jd_id import opensearch_get_jd_by_id
+import os
+
+TEST = 'RENDER' not in os.environ
 
 def resume_service(resume_url, version, model_name, top_n=5):
+    if TEST:
+        send_log("test")
+        ranked_ids=['9S_SQpEBIvxPMcUyMsVw']
+        ranked_es_document_list=opensearch_get_jd_by_id(ranked_ids)
+
+        return {
+            "resume_summary": "resume_summary",
+            "ranked_ids": ranked_ids,
+            "ranked_docs": ranked_es_document_list,
+        }
     resume_summary = extract_resume(resume_url, model_name)
     jd_by_id_dict, es_retrived_document_list = opensearch_get_jd_by_resume(resume_summary, return_size=300, days_ago=7)
 
@@ -16,4 +29,8 @@ def resume_service(resume_url, version, model_name, top_n=5):
         llm_ranked_id_list = rank_result(resume_summary, jd_by_id_dict, model_name, top_n, version)
     
     ranked_es_document_list = [next(item for item in es_retrived_document_list if item['_id'] == jd_id) for jd_id in llm_ranked_id_list]
-    return ranked_es_document_list
+    return {
+        "resume_summary": resume_summary,
+        "ranked_ids": llm_ranked_id_list,
+        "ranked_docs": ranked_es_document_list,
+    }

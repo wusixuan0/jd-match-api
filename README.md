@@ -8,6 +8,7 @@ add new env var to doppler: https://dashboard.doppler.com/workplace/87fa3aecaa17
 ```
 python manage.py makemigrations
 doppler run -- python manage.py migrate
+python manage.py migrate api zero
 ```
 ```
 pip freeze > requirements.txt
