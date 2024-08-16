@@ -8,8 +8,12 @@ import os
 
 TEST = 'RENDER' not in os.environ
 
-def resume_service(resume_url, version, model_name, top_n=5):
+def resume_service(resume_data, version, model_name, is_url=True, top_n=5):
     if TEST:
+        if is_url:
+            resume_summary = extract_resume(resume_data, model_name)
+        else:
+            resume_summary = resume_data
         send_log("test")
         ranked_ids=["YS8jTZEBIvxPMcUySMeb", "Gi9JUpEBIvxPMcUyA8jQ", "_i9iM5EBIvxPMcUyymMPQ", "hi-EOJEBIvxPMcUyXMRA", "yC_7R5EBIvxPMcUyz8ah"]
         ranked_es_document_list=opensearch_get_jd_by_id(ranked_ids)
@@ -19,7 +23,11 @@ def resume_service(resume_url, version, model_name, top_n=5):
             "ranked_ids": ranked_ids,
             "ranked_docs": ranked_es_document_list,
         }
-    resume_summary = extract_resume(resume_url, model_name)
+    if is_url:
+        resume_summary = extract_resume(resume_data, model_name)
+    else:
+        resume_summary = resume_data
+    
     jd_by_id_dict, es_retrived_document_list = opensearch_get_jd_by_resume(resume_summary, return_size=300, days_ago=7)
 
     if version == "version2":

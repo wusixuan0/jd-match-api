@@ -30,7 +30,7 @@ def resume_process(request):
 
     if TEST:
         upload_result = os.environ.get("RESUME_URL_EXAMPLE")
-        match_result = resume_service(upload_result, version, model_name, top_n=5)
+        match_result = resume_service(upload_result, version, model_name, is_url=True, top_n=5)
 
         temp_transaction = TemporaryTransaction.objects.create(
             file_url=upload_result,
@@ -48,13 +48,13 @@ def resume_process(request):
 
     file_obj = request.data.get('file')
     
-    if not file_obj: # TODO test exception, refactor
+    if not file_obj:
         return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
 
     upload_result = upload(file_obj)
 
     if isinstance(upload_result, str):        
-        match_result = resume_service(upload_result, version, model_name, top_n=5)
+        match_result = resume_service(upload_result, version, model_name, is_url=True, top_n=5)
         temp_transaction = TemporaryTransaction.objects.create(
             file_url=upload_result,
             file_summary=match_result.get("resume_summary"),
@@ -96,7 +96,7 @@ def subscribe(request):
             except ObjectDoesNotExist:
                 return Response({"error": "Invalid transaction ID"}, status=status.HTTP_404_NOT_FOUND)
 
-            user_email = UserEmail.objects.create(email=email, frequency=frequency)
+            user_email = UserEmail.objects.create(email=email, frequency=frequency.lower())
             resume = Resume.objects.create(
                 user_email=user_email,
                 resume_url=temp_transaction.file_url,
