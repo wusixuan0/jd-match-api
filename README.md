@@ -6,8 +6,10 @@ doppler run -- uvicorn config.asgi:application --workers 1
 ```  
 add new env var to doppler: https://dashboard.doppler.com/workplace/87fa3aecaa170026448c/projects/django-api/configs/dev  
 ```
+doppler run -- python manage.py email
 python manage.py makemigrations
 doppler run -- python manage.py migrate
+doppler run -- python manage.py migrate api zero
 ```
 ```
 pip freeze > requirements.txt
