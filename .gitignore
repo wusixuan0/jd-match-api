@@ -5,5 +5,4 @@
 *.pyc
 __pycache__/
 
-api/services/example_data.py
-generated_data/
+generated_data/sixuan.html
