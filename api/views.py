@@ -11,7 +11,7 @@ from django_ratelimit.decorators import ratelimit
 from api.services import resume_service
 from api.util.send_log import send_log
 from .models import TemporaryTransaction, UserEmail, Resume, JobRecommendation, UserFeedback
-from api.email_services.mailchimp_service import subscribe_user_to_list
+from api.email_services.mailchimp_service import subscribe_user_to_list, send_all_working
 from django.db import IntegrityError
 
 TEST = 'RENDER' not in os.environ
@@ -111,7 +111,7 @@ def subscribe(request):
                 subscribe_user_to_list(email)
             except Exception as e:
                 return Response({'error': {e.text}}, status=status.HTTP_400_BAD_REQUEST)
-
+        send_all_working(email)
         return Response({"message": "Subscription successful","email_id": user_email.id}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
