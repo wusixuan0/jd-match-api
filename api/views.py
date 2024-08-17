@@ -11,7 +11,7 @@ from api.services import resume_service
 from api.util.send_log import send_log
 from .models import TemporaryTransaction, UserEmail, Resume, JobRecommendation, UserFeedback
 from api.email_services.mailchimp_service import subscribe_user_to_list
-import pdb
+from django.db import IntegrityError
 
 TEST = 'RENDER' not in os.environ
 
@@ -95,8 +95,16 @@ def subscribe(request):
                 temp_transaction = TemporaryTransaction.objects.get(id=transaction_id)
             except ObjectDoesNotExist:
                 return Response({"error": "Invalid transaction ID"}, status=status.HTTP_404_NOT_FOUND)
+            try:
+                user_email = UserEmail.objects.create(email=email, frequency=frequency.lower())
+            except IntegrityError as e:
+                if 'unique constraint' in str(e).lower():
+                    # Handle the duplicate key error
+                    return Response({'error': 'Email address already exists'}, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    # Handle other IntegrityError cases
+                    return Response({'error': 'An error occurred while creating the user email'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-            user_email = UserEmail.objects.create(email=email, frequency=frequency.lower())
             resume = Resume.objects.create(
                 user_email=user_email,
                 resume_url=temp_transaction.file_url,
@@ -108,7 +116,7 @@ def subscribe(request):
                 ranked_job_ids=temp_transaction.ranked_ids,
             )
             convert_feedback_to_permanent(temp_transaction, user_email)
-            temp_transaction.delete()
+            # temp_transaction.delete()
 
             subscribe_user_to_list(email)
 
