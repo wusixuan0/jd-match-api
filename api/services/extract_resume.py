@@ -2,12 +2,16 @@ from api.util.utils import clean_text, extract_json_from_response
 from langchain_community.document_loaders import PyMuPDFLoader
 from api.util.send_log import send_log
 from api.util.gemini_api_request import requestGeminiAPI
+from api.models import GeneratedResume
 import json
 
-def extract_resume(resume_url, model_name):
-    send_log(">>>Starting to extract resume data")
-    resume_text = load_pdf(resume_url)
-    response = summarize_and_infer(resume_text, model_name='gemini-1.5-flash', is_resume=True)
+def extract_resume(pdf_url, model_name, is_resume=True):
+    if is_resume:
+        send_log(">>>Starting to extract resume data")
+    else:
+        send_log(">>>Starting to extract job description data")
+    resume_text = load_pdf(pdf_url)
+    response = summarize_and_infer(resume_text, model_name='gemini-1.5-flash', is_resume=is_resume)
     resume_summary = extract_json_from_response(response)
     return resume_summary
     

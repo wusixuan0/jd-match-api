@@ -7,6 +7,8 @@ from api.util.es_query_jd_id import opensearch_get_jd_by_id
 import os
 
 TEST = 'RENDER' not in os.environ
+def employer_service(pdf_url, version="version1", model_name, top_n=5):
+    job_summary = extract_resume(resume_data, model_name, is_resume=False)
 
 def resume_service(resume_data, version, model_name, is_url=True, top_n=5):
     if TEST:
@@ -24,7 +26,7 @@ def resume_service(resume_data, version, model_name, is_url=True, top_n=5):
             "ranked_docs": ranked_es_document_list,
         }
     if is_url:
-        resume_summary = extract_resume(resume_data, model_name)
+        resume_summary = extract_resume(resume_data, model_name, is_resume=True)
     else:
         resume_summary = resume_data
     

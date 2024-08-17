@@ -39,3 +39,6 @@ class UserFeedback(models.Model):
                 name='feedback_has_temporary_transaction_or_user'
             )
         ]
+
+class GeneratedResume(models.Model):
+    html = models.TextField()
