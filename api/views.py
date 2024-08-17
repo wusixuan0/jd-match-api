@@ -107,8 +107,10 @@ def subscribe(request):
             )
             convert_feedback_to_permanent(temp_transaction, user_email)
             # temp_transaction.delete()
-
-            subscribe_user_to_list(email)
+            try:
+                subscribe_user_to_list(email)
+            except Exception as e:
+                return Response({'error': {e.text}}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"message": "Subscription successful","email_id": user_email.id}, status=status.HTTP_200_OK)
     except Exception as e:
