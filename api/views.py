@@ -1,5 +1,6 @@
 import os
 import time
+from datetime import datetime
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -18,53 +19,42 @@ TEST = 'RENDER' not in os.environ
 @ratelimit(key='ip', rate='5/m', block=False)
 @api_view(['POST'])
 def resume_process(request):
-    send_log(">>>Uploading Resume PDF File to S3 bucket.")
+    start_time = time.time()
+    start_time_datetime = datetime.now().strftime('%Y-%m-%d %I:%M:%S %p')
+    send_log(f">>>Django API Receive Request at {start_time_datetime}")
+
     if getattr(request, 'limited', False):
-        return Response(
-            {"error": "You have exceeded the request limit (5 requests per minute). Please try again later."},
-            status=status.HTTP_429_TOO_MANY_REQUESTS
-        )
+        return Response({"error": "You have exceeded the request limit (5 requests per minute). Please try again later."}, status=status.HTTP_429_TOO_MANY_REQUESTS)
     
     version = request.data.get('version') or 'version1'
     model_name = request.data.get('model_name') or 'gemini-1.5-flash'
-
-    if TEST:
-        upload_result = os.environ.get("RESUME_URL_EXAMPLE")
-        match_result = resume_service(upload_result, version, model_name, is_url=True, top_n=5)
-
-        temp_transaction = TemporaryTransaction.objects.create(
-            file_url=upload_result,
-            file_summary=match_result.get("resume_summary"),
-            ranked_ids= match_result.get("ranked_ids"),
-        )
-
-        ranked_docs = match_result.get("ranked_docs")
-        return Response(
-            {
-                "ranked_jds": ranked_docs,
-                "transaction_id": temp_transaction.id,
-        }, status=status.HTTP_200_OK)
-
-
     file_obj = request.data.get('file')
     
     if not file_obj:
         return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
-
-    upload_result = upload(file_obj)
-
-    if isinstance(upload_result, str):        
+    
+    if not TEST:
+        send_log("Uploading Resume PDF File to S3 bucket.")
+        upload_result = upload(file_obj)
+    else:
+        upload_result = os.environ.get("RESUME_URL_EXAMPLE")    
+  
+    if isinstance(upload_result, str):              
         match_result = resume_service(upload_result, version, model_name, is_url=True, top_n=5)
         temp_transaction = TemporaryTransaction.objects.create(
             file_url=upload_result,
             file_summary=match_result.get("resume_summary"),
             ranked_ids= match_result.get("ranked_ids"),
         )
-        ranked_docs = match_result.get("ranked_docs")
-        return Response(
-            {
-                "ranked_jds": ranked_docs,
-                "transaction_id": temp_transaction.id,
+        
+        end_time = time.time()
+        duration = round(end_time - start_time, 2)
+        end_time_datetime = datetime.now().strftime('%Y-%m-%d %I:%M:%S %p')
+        send_log(f"<<<Django API Request Finished at {end_time_datetime}. Duration: {duration} seconds")
+        
+        return Response({
+            "ranked_jds": match_result.get("ranked_docs"),
+            "transaction_id": temp_transaction.id,
         }, status=status.HTTP_200_OK)
     else:
         return Response({"error": str(upload_result)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
