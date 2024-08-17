@@ -24,4 +24,4 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f'Email content generated: {response}'))
         
         else:
-            self.stdout.write(self.style.ERROR(f'Invalid operation: {operation}'))
+            self.stdout.write(self.style.ERROR(f'Invalid: use "send_all", "send_one", or "generate_email_content"'))

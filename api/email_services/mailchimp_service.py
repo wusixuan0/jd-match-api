@@ -5,6 +5,7 @@ import mailchimp_marketing as MailchimpMarketing
 from mailchimp_marketing.api_client import ApiClientError
 import os
 from datetime import datetime, timedelta
+from datetime import datetime
 import pdb
 client = MailchimpMarketing.Client()
 
@@ -24,9 +25,6 @@ def subscribe_user_to_list(email):
     except ApiClientError as error:
         send_log(f"An exception occurred: {error.text}")
         raise error
-
-import os
-from mailchimp_marketing import Client
 
 def send_single_client(email):
     try:
@@ -58,8 +56,8 @@ def send_single_client(email):
         # Send the campaign
         response = client.campaigns.send(campaign_id)
 
-        print(f"Sent campaign to {email} with ID: {campaign_id}. The response is: {response}")
-
+        send_datetime = datetime.now().strftime('%Y-%m-%d %I:%M:%S %p')
+        print(f"Sent campaign to {email} at {send_datetime} with ID: {campaign_id}. The response is: {response}")
         # Clean up: delete the segment after sending
         client.lists.delete_segment(os.environ.get('MAILCHIMP_AUDIENCE_ID'), segment_id)
 
@@ -69,30 +67,16 @@ def send_single_client(email):
         print(f"An error occurred: {e}")
         return None
 
-def send_all_subscriber(email):
+def send_all_subscriber(frequency):
+    user_emails = UserEmail.objects.filter(frequency=frequency)
+    for user_email in user_emails:
+        email=user_email.email
     try:
-        campaign = client.campaigns.create({
-            "type": "regular",
-            "recipients": {"list_id": os.environ.get('MAILCHIMP_AUDIENCE_ID')},
-            "settings": {
-                "subject_line": "Thank You For Subscribing! Here Are Your Job Recommendations",
-                "from_name": "https://jd-match.netlify.app/",
-                "reply_to": os.environ.get('DEFAULT_FROM_EMAIL'),
-            },
-        })
-
-        campaign_id = campaign['id']
-        content = generate_email_content(email)
-        client.campaigns.set_content(campaign_id, {"html": content})
-
-        # Send immediately
-        response = client.campaigns.send(campaign_id)
-
-        print(f"Sent immediate campaign with ID: {campaign_id}. The response is: {response}")
+        response = send_single_client(email)
         return response
-    
     except Exception as e:
         print(f"An error occurred: {str(e)}")
+        raise e
 
 def get_next_schedule_time(frequency):
     now = datetime.now()
