@@ -6,4 +6,4 @@
 __pycache__/
 
 api/services/example_data.py
-resume.html
+generated_data/
