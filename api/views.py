@@ -14,8 +14,6 @@ from .models import TemporaryTransaction, UserEmail, Resume, JobRecommendation, 
 from api.email_services.mailchimp_service import subscribe_user_to_list, send_all_working
 from django.db import IntegrityError
 
-TEST = 'RENDER' not in os.environ
-
 @ratelimit(key='ip', rate='5/m', block=False)
 @api_view(['POST'])
 def resume_process(request):
@@ -33,13 +31,10 @@ def resume_process(request):
     
     if not file_obj:
         return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
-    if TEST and file_category == "resume":
-        upload_result = os.environ.get("RESUME_URL_EXAMPLE")
-    else:
-        send_log("Uploading PDF File to S3 bucket.")
-        upload_result = upload(file_obj)
-            
-  
+
+    send_log("Uploading PDF File to S3 bucket.")
+    upload_result = upload(file_obj)
+
     if isinstance(upload_result, str):
         if file_category == 'resume':
             match_result = resume_service(upload_result, version, model_name, is_url=True, top_n=5)
