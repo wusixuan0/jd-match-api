@@ -51,7 +51,7 @@ def subscribe_user_to_list(email):
 
     except ApiClientError as error:
         send_log(f"An exception occurred: {error.text}")
-        raise error
+        raise error 
 
 def generate_confirm_email_content(email):
     content = f"""
@@ -59,15 +59,16 @@ def generate_confirm_email_content(email):
     <body>
     <h1>Thank You For Subscribing! Here Are Your Job Recommendations</h1>
     """
-    resume_summary = get_user_resume_summary(email)
+    user_email = UserEmail.objects.get(email=email)
+    resume_url=Resume.objects.get(user_email=user_email).resume_url
     version = "version2"
     model_name = 'gemini-1.5-flash'
     
     match_result = resume_service(
-        resume_data=resume_summary,
+        resume_data=resume_url,
         version=version,
         model_name=model_name,
-        is_url=False,
+        is_url=True,
         top_n=5
     )
     ranked_docs = match_result.get("ranked_docs")
@@ -88,8 +89,7 @@ def generate_confirm_email_content(email):
     </body>
     </html>
     """
-    
-    return content    
+    return content
 
 def generate_new_email_content(email):
     content = f"""
