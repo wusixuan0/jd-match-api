@@ -90,7 +90,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     "https://jd-match.netlify.app",
-    "https://jd-match.netlify.app/employer",
+    # "https://jd-match.netlify.app/employer",
     "https://match-django-api-98fq.onrender.com",
 ]
 

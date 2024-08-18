@@ -4,5 +4,3 @@
 
 *.pyc
 __pycache__/
-
-generated_data/sixuan.html
