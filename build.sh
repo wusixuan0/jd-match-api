@@ -10,4 +10,4 @@ pip install -r requirements.txt
 
 # Apply any outstanding database migrations
 python manage.py migrate
-python manage.py seed
+# python manage.py seed

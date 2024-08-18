@@ -35,10 +35,11 @@ def send_all_working(email):
 
         send_datetime = datetime.now().strftime('%Y-%m-%d %I:%M:%S %p')
         print(f"Sent campaign to {email} at {send_datetime} with ID: {campaign_id}. The response is: {response}")
+        send_log(f"Sent campaign to {email} at {send_datetime} with ID: {campaign_id}. The response is: {response}")
         return response
     
     except Exception as e:
-        print(f"An error occurred: {str(e)}")
+        send_log(f"An error occurred: {str(e)}")
 
 def subscribe_user_to_list(email):
     try:
