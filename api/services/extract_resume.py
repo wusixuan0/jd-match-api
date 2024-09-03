@@ -1,18 +1,20 @@
-from api.util.utils import file_to_text, extract_json_from_response
+from api.util.utils import extract_json_from_response
 from api.util.send_log import send_log
 from api.util.gemini_api_request import requestGeminiAPI
+from api.util.file_extract.process_file import pdf_to_text
 import json
 
-def extract_resume(file_obj, model_name, is_resume=True):
+def extract_resume(file, model_name, is_resume):
     if is_resume:
         send_log(">>>Starting to extract resume data")
     else:
         send_log(">>>Starting to extract job description data")
-    resume_text = file_to_text(file_obj)
-    response = summarize_and_infer(resume_text, model_name='gemini-1.5-flash', is_resume=is_resume)
-    resume_summary = extract_json_from_response(response)
-    return resume_summary
-    
+
+    plain_text = pdf_to_text(file)
+    response = summarize_and_infer(plain_text, model_name, is_resume=is_resume)
+    summary = extract_json_from_response(response)
+    return summary
+
 def summarize_and_infer(resume_text, model_name, is_resume=True):
     resume_title="target job titles"
     jd_title="job title"

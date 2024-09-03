@@ -2,22 +2,9 @@ from .extract_resume import extract_resume
 from .es_query_resume import opensearch_get_jd_by_resume
 from .match_and_rank import rank_result
 from .semantic_search import semantic_search
-from api.util.send_log import send_log
-from api.util.es_query_jd_id import opensearch_get_jd_by_id
 from api.models import GeneratedResume
-import os
-import pdb
-import html
-import re
-
-def html_to_plain_text(html_content):
-    # Decode HTML entities
-    text = html.unescape(html_content)
-    # Remove HTML tags
-    text = re.sub('<[^<]+?>', '', text)
-    # Remove extra whitespace and newlines
-    text = ' '.join(text.split())
-    return text
+from api.util.es_query_jd_id import opensearch_get_jd_by_id
+from api.util.utils import html_to_plain_text
 
 def employer_service(file_obj, version="version1", model_name='gemini-1.5-flash', top_n=5):
     job_summary = extract_resume(file_obj, model_name, is_resume=False)

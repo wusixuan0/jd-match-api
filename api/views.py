@@ -9,6 +9,7 @@ from django_ratelimit.decorators import ratelimit
 from api.services import resume_service, employer_service
 from api.util.send_log import send_log
 from .models import TemporaryTransaction, UserEmail, Resume, JobRecommendation, UserFeedback
+from api.email_services.mailchimp_service import subscribe_user_to_list
 from django.db import IntegrityError
 
 @ratelimit(key='ip', rate='5/m', block=False)
@@ -25,7 +26,7 @@ def resume_process(request):
     model_name = request.data.get('model_name') or 'gemini-1.5-flash'
     file_obj = request.data.get('file')
     file_category = request.data.get('file_category')
-    
+
     if not file_obj:
         return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -67,15 +68,20 @@ def feedback(request):
 
 @api_view(['POST'])
 def subscribe(request):
+    email = request.data.get('email')
+    frequency = request.data.get('frequency')
+    transaction_id = request.data.get('transaction_id')
+    
+    if not all([transaction_id, email, frequency]):
+        return Response({"error": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        subscribe_user_to_list(email, frequency.lower())
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
     try:
         with transaction.atomic():
-            transaction_id = request.data.get('transaction_id')
-            email = request.data.get('email')
-            frequency = request.data.get('frequency')
-
-            if not all([transaction_id, email, frequency]):
-                return Response({"error": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
-
             try:
                 temp_transaction = TemporaryTransaction.objects.get(id=transaction_id)
             except ObjectDoesNotExist:
@@ -102,8 +108,6 @@ def subscribe(request):
             )
             convert_feedback_to_permanent(temp_transaction, user_email)
             # temp_transaction.delete()
-            # TODO: comfirmation email
-
         return Response({"message": "Subscription successful","email_id": user_email.id}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

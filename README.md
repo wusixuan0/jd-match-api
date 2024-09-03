@@ -16,8 +16,7 @@ doppler run -- python manage.py migrate api zero
 pip freeze > requirements.txt
 ```
 ```
-import pdb
-pdb.set_trace()
+import pdb; pdb.set_trace()
 ```
 get started
 ```
