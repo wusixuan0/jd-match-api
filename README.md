@@ -19,10 +19,6 @@ pip freeze > requirements.txt
 import pdb
 pdb.set_trace()
 ```
-running with Gunicorn for render.
-```
-doppler run -- python -m gunicorn config.asgi:application -k uvicorn.workers.UvicornWorker
-```
 get started
 ```
 python3 -m venv venv
@@ -30,9 +26,8 @@ source venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 export DOPPLER_TOKEN=
-doppler run -- python manage.py runserver
+doppler run -- uvicorn config.asgi:application --workers 1
 ``` 
-doppler get started: https://github.com/wusixuan0/seed-supabase/blob/main/README.md  
 environment variables in this project (incomplete):
 echo $DATABASE_URL
 echo $OPENSEARCH_USERNAME_HOST 
@@ -138,3 +133,30 @@ Define urlpatterns for MatchRecordCreateView
 
 urls.py (project level):  
 Include the app's URLs
+
+#### doppler get started
+
+1. Install Doppler CLI `brew install dopplerhq/cli/doppler`
+2. Run `doppler login` to authenticate
+3. When you run Doppler commands in your project directory, it will automatically use the settings from .doppler.yaml.
+
+Current YAML file doesn't set a default configuration.
+
+Instead, it tells Doppler about your project and what environments exist. 
+
+You'll need to specify which config to use (dev or prd) each time you run a command.
+
+`doppler run --config prd -- node test_doppler.js`
+
+`doppler run --config dev -- node test_doppler.js`
+
+```
+"scripts": {
+  "start:dev": "doppler run --config dev -- node your-app.js",
+  "start:prod": "doppler run --config prd -- node your-app.js"
+}
+```
+
+`npm run start:dev`
+
+`npm run start:prod`

@@ -19,8 +19,8 @@ def html_to_plain_text(html_content):
     text = ' '.join(text.split())
     return text
 
-def employer_service(pdf_url, version="version1", model_name='gemini-1.5-flash', top_n=5):
-    job_summary = extract_resume(pdf_url, model_name, is_resume=False)
+def employer_service(file_obj, version="version1", model_name='gemini-1.5-flash', top_n=5):
+    job_summary = extract_resume(file_obj, model_name, is_resume=False)
 
     html_records = GeneratedResume.objects.values('id', 'html')
     html_dict_original = {record['id']: record['html'] for record in html_records}

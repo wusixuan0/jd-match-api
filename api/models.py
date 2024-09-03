@@ -1,7 +1,7 @@
 from django.db import models
 
 class TemporaryTransaction(models.Model):
-    file_url =  models.URLField()
+    file_url =  models.URLField(null=True)
     file_summary = models.TextField()
     ranked_ids = models.CharField(max_length=255)
 
@@ -11,7 +11,7 @@ class UserEmail(models.Model):
 
 class Resume(models.Model):
     user_email = models.ForeignKey(UserEmail, on_delete=models.CASCADE)
-    resume_url =  models.URLField()
+    resume_url =  models.URLField(null=True)
     resume_summary = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 

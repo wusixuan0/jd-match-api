@@ -1,4 +1,3 @@
-import os
 import time
 from datetime import datetime
 from rest_framework.decorators import api_view
@@ -6,12 +5,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
-from supabase import create_client
 from django_ratelimit.decorators import ratelimit
 from api.services import resume_service, employer_service
 from api.util.send_log import send_log
 from .models import TemporaryTransaction, UserEmail, Resume, JobRecommendation, UserFeedback
-from api.email_services.mailchimp_service import subscribe_user_to_list, send_all_working
 from django.db import IntegrityError
 
 @ratelimit(key='ip', rate='5/m', block=False)
@@ -32,14 +29,10 @@ def resume_process(request):
     if not file_obj:
         return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-    send_log("Uploading PDF File to S3 bucket.")
-    upload_result = upload(file_obj)
-
-    if isinstance(upload_result, str):
+    try:
         if file_category == 'resume':
-            match_result = resume_service(upload_result, version, model_name, is_url=True, top_n=5)
+            match_result = resume_service(file_obj, version, model_name, is_url=True, top_n=5)
             temp_transaction = TemporaryTransaction.objects.create(
-                file_url=upload_result,
                 file_summary=match_result.get("resume_summary"),
                 ranked_ids= match_result.get("ranked_ids"),
             )
@@ -54,12 +47,12 @@ def resume_process(request):
                 "transaction_id": temp_transaction.id,
             }, status=status.HTTP_200_OK)
         else:
-            match_result = employer_service(upload_result, version, model_name, top_n=5)
+            match_result = employer_service(file_obj, version, model_name, top_n=5)
             return Response({
                 "match_result": match_result,
             }, status=status.HTTP_200_OK)
-    else:
-        return Response({"error": str(upload_result)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception as e:
+        return Response({"error": e}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 def feedback(request):
@@ -109,11 +102,8 @@ def subscribe(request):
             )
             convert_feedback_to_permanent(temp_transaction, user_email)
             # temp_transaction.delete()
-            try:
-                subscribe_user_to_list(email)
-            except Exception as e:
-                return Response({'error': {e.text}}, status=status.HTTP_400_BAD_REQUEST)
-        send_all_working(email)
+            # TODO: comfirmation email
+
         return Response({"message": "Subscription successful","email_id": user_email.id}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -123,28 +113,3 @@ def convert_feedback_to_permanent(temp_transaction, user_email):
         user_email=user_email,
         temporary_transaction=None
     )
- 
-def upload(file_obj):
-    SUPABASE_URL = os.environ.get('SUPABASE_URL')
-    SUPABASE_ANON_KEY = os.environ.get('SUPABASE_ANON_KEY')
-    if not (SUPABASE_URL and SUPABASE_ANON_KEY):
-        raise ValueError("SUPABASE_URL or SUPABASE_ANON_KEY environment variables are not set")
-
-    supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
-    bucket_name = os.environ.get('BUCKET_NAME')
-    folder_name = os.environ.get('FOLDER_NAME')
-
-    file_content = file_obj.read() # Convert InMemoryUploadedFile to bytes
-    file_name = f"{int(time.time())}_{file_obj.name}"
-    
-    try:
-        response = supabase.storage.from_(bucket_name).upload(f'{folder_name}/{file_name}', file_content)
-
-        file_key = response.json().get('Key')
-        
-        S3_URL = os.environ.get('S3_URL')
-        file_url=f"{S3_URL}{file_key}"
-        send_log(f'<<<File Uploaded with file key: {file_name}')
-        return file_url
-    except Exception as e:
-        return e

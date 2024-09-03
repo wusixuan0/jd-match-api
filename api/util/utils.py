@@ -1,10 +1,25 @@
 from datetime import datetime, timedelta
 import re
 import json
+import pymupdf
+
+def file_to_text(file): # Transforms an InMemoryUploadedFile object to text using PyMuPDF
+    with file.open("rb") as file:
+        doc = pymupdf.Document(stream=file.read())
+        text = ""
+        for page in doc:
+            text += page.get_text()
+    return clean_text(text)
+
+def load_pdf(url):
+    from langchain_community.document_loaders import PyMuPDFLoader
+    loader = PyMuPDFLoader(url)
+    docs = loader.load()
+    full_text = " ".join(doc.page_content for doc in docs)
+    return clean_text(full_text)
 
 def clean_text(text):
     # Remove HTML tags
-    import re
     text = re.sub(r'<[^>]+>', '', text)
 
     # Remove markdown formatting
