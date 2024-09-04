@@ -3,11 +3,13 @@ from django.db import models
 class TemporaryTransaction(models.Model):
     file_url =  models.URLField(null=True)
     file_summary = models.TextField()
-    ranked_ids = models.CharField(max_length=255)
+    ranked_ids = models.CharField(max_length=255) # TODO: change to JSONField
+    created_at = models.DateTimeField(auto_now_add=True)
 
 class UserEmail(models.Model):
     email = models.EmailField(unique=True)
     frequency = models.CharField(max_length=20)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 class Resume(models.Model):
     user_email = models.ForeignKey(UserEmail, on_delete=models.CASCADE)

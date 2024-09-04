@@ -3,7 +3,6 @@ from .es_query_resume import opensearch_get_jd_by_resume
 from .match_and_rank import rank_result
 from .semantic_search import semantic_search
 from api.models import GeneratedResume
-from api.util.es_query_jd_id import opensearch_get_jd_by_id
 from api.util.utils import html_to_plain_text
 
 def employer_service(file_obj, version="version1", model_name='gemini-1.5-flash', top_n=5):
@@ -21,19 +20,17 @@ def employer_service(file_obj, version="version1", model_name='gemini-1.5-flash'
     return ranked_html_list
 
 def resume_service(resume_data, version, model_name, is_url=True, top_n=5):
-    # if TEST:
-    #     # if is_url:
-    #     #     resume_summary = extract_resume(resume_data, model_name)
-    #     # else:
-    #     #     resume_summary = resume_data
-    #     ranked_ids=["YS8jTZEBIvxPMcUySMeb", "Gi9JUpEBIvxPMcUyA8jQ", "_i9iM5EBIvxPMcUyymMPQ", "hi-EOJEBIvxPMcUyXMRA", "yC_7R5EBIvxPMcUyz8ah"]
-    #     ranked_es_document_list=opensearch_get_jd_by_id(ranked_ids)
+    import os;TEST='RENDER' not in os.environ
+    if False:
+        from api.util.es_query_jd_id import opensearch_get_jd_by_id
+        ranked_ids=["YS8jTZEBIvxPMcUySMeb", "Gi9JUpEBIvxPMcUyA8jQ", "_i9iM5EBIvxPMcUyymMPQ", "hi-EOJEBIvxPMcUyXMRA", "yC_7R5EBIvxPMcUyz8ah"]
+        ranked_es_document_list=opensearch_get_jd_by_id(ranked_ids)
 
-    #     return {
-    #         "resume_summary": "resume_summary",
-    #         "ranked_ids": ranked_ids,
-    #         "ranked_docs": ranked_es_document_list,
-    #     }
+        return {
+            "resume_summary": "test resume_service",
+            "ranked_ids": ranked_ids,
+            "ranked_docs": ranked_es_document_list,
+        }
     if is_url:
         resume_summary = extract_resume(resume_data, model_name, is_resume=True)
     else:

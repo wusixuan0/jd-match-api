@@ -9,8 +9,10 @@ from django_ratelimit.decorators import ratelimit
 from api.services import resume_service, employer_service
 from api.util.send_log import send_log
 from .models import TemporaryTransaction, UserEmail, Resume, JobRecommendation, UserFeedback
-from api.email_services.mailchimp_service import subscribe_user_to_list
+from api.email_services.mailchimp_service import subscribe_user_to_list, send_one
+from api.util.es_query_jd_id import opensearch_get_jd_by_id
 from django.db import IntegrityError
+import json
 
 @ratelimit(key='ip', rate='5/m', block=False)
 @api_view(['POST'])
@@ -35,7 +37,7 @@ def resume_process(request):
             match_result = resume_service(file_obj, version, model_name, is_url=True, top_n=5)
             temp_transaction = TemporaryTransaction.objects.create(
                 file_summary=match_result.get("resume_summary"),
-                ranked_ids= match_result.get("ranked_ids"),
+                ranked_ids= json.dumps(match_result.get("ranked_ids")),
             )
             
             end_time = time.time()
@@ -76,7 +78,7 @@ def subscribe(request):
         return Response({"error": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
     
     try:
-        subscribe_user_to_list(email, frequency.lower())
+        subscribe_user_to_list(email)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
@@ -86,14 +88,13 @@ def subscribe(request):
                 temp_transaction = TemporaryTransaction.objects.get(id=transaction_id)
             except ObjectDoesNotExist:
                 return Response({"error": "Invalid transaction ID"}, status=status.HTTP_404_NOT_FOUND)
+
             try:
-                user_email = UserEmail.objects.create(email=email, frequency=frequency.lower())
-            except IntegrityError as e:
-                if 'unique constraint' in str(e).lower():
-                    # Handle the duplicate key error
-                    return Response({'error': 'Email address already exists'}, status=status.HTTP_400_BAD_REQUEST)
-                else:
-                    # Handle other IntegrityError cases
+                user_email = UserEmail.objects.get(email=email)
+            except ObjectDoesNotExist:
+                try:
+                    user_email = UserEmail.objects.create(email=email, frequency=frequency.lower())
+                except IntegrityError as e:
                     return Response({'error': 'An error occurred while creating the user email'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             resume = Resume.objects.create(
@@ -107,7 +108,12 @@ def subscribe(request):
                 ranked_job_ids=temp_transaction.ranked_ids,
             )
             convert_feedback_to_permanent(temp_transaction, user_email)
+            ranked_ids= json.loads(temp_transaction.ranked_ids)
+            ranked_docs = opensearch_get_jd_by_id(ranked_ids)
+            job_matched_time = temp_transaction.created_at
+            send_one(email, ranked_docs, job_matched_time)
             # temp_transaction.delete()
+        
         return Response({"message": "Subscription successful","email_id": user_email.id}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
