@@ -10,7 +10,7 @@ from api.services import resume_service, employer_service
 from api.util.send_log import send_log
 from .models import TemporaryTransaction, UserEmail, Resume, JobRecommendation, UserFeedback
 from api.email_services.mailchimp_service import subscribe_user_to_list, send_one
-from api.util.es_query_jd_id import opensearch_get_jd_by_id
+from api.util.opensearch_queries import opensearch_get_jd_by_id
 from django.db import IntegrityError
 import json
 
@@ -34,6 +34,9 @@ def resume_process(request):
 
     try:
         if file_category == 'resume':
+            location = request.data.get('location')
+            job_title = request.data.get('job_title')
+            
             match_result = resume_service(file_obj, version, model_name, is_url=True, top_n=5)
             temp_transaction = TemporaryTransaction.objects.create(
                 file_summary=match_result.get("resume_summary"),

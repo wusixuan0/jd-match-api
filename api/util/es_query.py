@@ -4,7 +4,28 @@ import time
 from datetime import datetime
 from .send_log import send_log
 
+ES_JOB_INDEX = 'swifthire_jobs_dev'
+
 def query_es(query):
+    es_client = create_client()
+    
+    start_time = time.time()
+    start_time_datetime = datetime.now().strftime('%Y-%m-%d %I:%M:%S %p')
+    send_log(f"OpenSearch query start at {start_time_datetime}")
+    send_log(f"OpenSearch query: {str(query)}")
+    
+    response = es_client.search(index=ES_JOB_INDEX, body=query)
+    end_time = time.time()
+    duration = end_time - start_time
+    total_hits = response['hits']['total']['value']
+    retrived_doc = response['hits']['hits']
+    
+    send_log(f"OpenSearch Request Duration: {duration} seconds")
+    send_log(f"documents that match query criteria: {total_hits}")
+    send_log(f"<<<number of retrived documents: {len(retrived_doc)}")
+    return retrived_doc
+
+def create_client():
     host = os.environ.get('OPENSEARCH_USERNAME_HOST')
     if not host:
         raise ValueError("OPENSEARCH_USERNAME_HOST environment variable is not set")
@@ -22,19 +43,15 @@ def query_es(query):
         ssl_show_warn = False,
     )
 
-    ES_JOB_INDEX = 'swifthire_jobs_dev'
+    return es_client
+
+def query_simple(query):
+    es_client = create_client()
     
     start_time = time.time()
-    start_time_datetime = datetime.now().strftime('%Y-%m-%d %I:%M:%S %p')
-    send_log(f"OpenSearch query start at {start_time_datetime}")
-    send_log(f"OpenSearch query: {str(query)}")
     response = es_client.search(index=ES_JOB_INDEX, body=query)
     end_time = time.time()
     duration = end_time - start_time
-    total_hits = response['hits']['total']['value']
-    retrived_doc = response['hits']['hits']
     
-    send_log(f"OpenSearch Request Duration: {duration} seconds")
-    send_log(f"documents that match query criteria: {total_hits}")
-    send_log(f"<<<number of retrived documents: {len(retrived_doc)}")
-    return retrived_doc
+    print(f"OpenSearch Request Duration: {duration} seconds")
+    return response

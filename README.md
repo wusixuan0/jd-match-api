@@ -7,8 +7,9 @@ doppler run -- uvicorn config.asgi:application --workers 1
 add new env var to doppler: https://dashboard.doppler.com/workplace/87fa3aecaa170026448c/projects/django-api/configs/dev  
 check mail: https://us12.admin.mailchimp.com/campaigns/  
 ```
-doppler run -- python manage.py email generate_email_content
-doppler run -- python manage.py email send_one
+doppler run -- python manage.py opensearch searched_job_title
+doppler run -- python manage.py opensearch location
+doppler run -- python manage.py email schedule_send weekly
 python manage.py makemigrations
 doppler run -- python manage.py migrate
 doppler run -- python manage.py migrate api zero

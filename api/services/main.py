@@ -21,8 +21,9 @@ def employer_service(file_obj, version="version1", model_name='gemini-1.5-flash'
 
 def resume_service(resume_data, version, model_name, is_url=True, top_n=5):
     import os;TEST='RENDER' not in os.environ
-    if False:
-        from api.util.es_query_jd_id import opensearch_get_jd_by_id
+    TEST=False
+    if TEST:
+        from api.util.opensearch_queries import opensearch_get_jd_by_id
         ranked_ids=["YS8jTZEBIvxPMcUySMeb", "Gi9JUpEBIvxPMcUyA8jQ", "_i9iM5EBIvxPMcUyymMPQ", "hi-EOJEBIvxPMcUyXMRA", "yC_7R5EBIvxPMcUyz8ah"]
         ranked_es_document_list=opensearch_get_jd_by_id(ranked_ids)
 
