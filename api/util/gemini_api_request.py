@@ -34,3 +34,20 @@ def requestGeminiAPI(request_payload, model_name='gemini-1.5-flash'):
         send_log(f"Retrying API request in {retry_wait} seconds...")
         time.sleep(retry_wait)
         return requestGeminiAPI(request_payload, model_name)
+
+def SimpleGeminiAPICall(request_payload, model_name):
+    start_time = time.time()
+    print(f"Prompt: \n{request_payload}")
+    model = genai.GenerativeModel(model_name)
+    try:
+        response = model.generate_content(request_payload)
+        response_data = response.text
+        end_time = time.time()
+        duration = end_time - start_time
+
+        print(f"Gemini API Response: \n{response_data}")
+        print(f"Duration: {duration} seconds")
+        return response_data
+    except Exception as e:
+        print(f"Gemini API ERROR: {e}")
+        return str(e)
