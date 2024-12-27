@@ -1,27 +1,27 @@
-from .extract_resume import extract_resume
+from .extract_resume import extract_resume, extract_file
 from .es_query_resume import opensearch_get_jd_by_resume
 from .match_and_rank import rank_result
 from .semantic_search import semantic_search
 from api.models import GeneratedResume
 from api.util.utils import html_to_plain_text
 
-def employer_service(file_obj, version="version1", model_name='gemini-1.5-flash', top_n=5):
-    job_summary = extract_resume(file_obj, model_name, is_resume=False)
-
-    html_records = GeneratedResume.objects.values('id', 'html')
-    html_dict_original = {record['id']: record['html'] for record in html_records}
-    html_dict_cleaned = {record['id']: html_to_plain_text(record['html']) for record in html_records}
-    llm_ranked_id_list = rank_result(job_summary, html_dict_cleaned, model_name, top_n, version, is_resume=False)
+def recruit_service(file):
+    job_summary = extract_file(file)
     
-    ranked_html_list = []
-    for id in llm_ranked_id_list:
-        if id in html_dict_original:
-            ranked_html_list.append(html_dict_original[id])
-    return ranked_html_list
+    # html_records = GeneratedResume.objects.values('id', 'html')
+    # html_dict_original = {record['id']: record['html'] for record in html_records}
+    # html_dict_cleaned = {record['id']: html_to_plain_text(record['html']) for record in html_records}
+    # llm_ranked_id_list = rank_result(job_summary, html_dict_cleaned, model_name, top_n, version, is_resume=False)
+    
+    # ranked_html_list = []
+    # for id in llm_ranked_id_list:
+    #     if id in html_dict_original:
+    #         ranked_html_list.append(html_dict_original[id])
+    # return ranked_html_list
 
 def resume_service(resume_data, version, model_name, is_url=True, top_n=5):
     import os;TEST='RENDER' not in os.environ
-    if False:
+    if TEST:
         from api.util.es_query_jd_id import opensearch_get_jd_by_id
         ranked_ids=["YS8jTZEBIvxPMcUySMeb", "Gi9JUpEBIvxPMcUyA8jQ", "_i9iM5EBIvxPMcUyymMPQ", "hi-EOJEBIvxPMcUyXMRA", "yC_7R5EBIvxPMcUyz8ah"]
         ranked_es_document_list=opensearch_get_jd_by_id(ranked_ids)

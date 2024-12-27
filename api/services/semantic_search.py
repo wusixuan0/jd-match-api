@@ -68,6 +68,7 @@ def split(jd_by_id_dict):
         chunk_overlap=100
     )
 
+    # jd_by_id_dict (dict): A dictionary where keys are IDs and values are job descriptions.
     jd_docs = [Document(page_content=text, metadata={"jd_id": id}) for id, text in jd_by_id_dict.items()]
     jd_splits = text_splitter.split_documents(jd_docs)
     send_log(f"Number of splitted JD chunks: {len(jd_splits)}")

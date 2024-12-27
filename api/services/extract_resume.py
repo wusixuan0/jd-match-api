@@ -57,3 +57,38 @@ def summarize_and_infer(resume_text, model_name, is_resume=True):
     send_log(f"Gemini API Request Payload: \n{request_payload}")
     response_data = requestGeminiAPI(request_payload, model_name)
     return response_data
+
+def extract_file(file):
+    plain_text = pdf_to_text(file)
+    response = summarize_jd(plain_text)
+    summary = extract_json_from_response(response)
+    return summary
+
+def summarize_jd(jd_text):
+    string_type = ""
+    json_schema = {}
+
+    for field in ["job title", "role category", "skills", "qualifications", "city", "preferences", "growth potential"]:
+        json_schema[field] = string_type
+    json_schema_string = json.dumps(json_schema, indent=4)
+
+    prompt = f"""
+    Analyze this job description. 
+    Return a JSON object using this schema:
+    {json_schema_string}
+    If information for a field is not available or cannot be inferred, do not return the field.
+    Fields to extract/infer:
+    - job title: 
+    - role category: Identify role specialization. Choose the closest one from the following list: "Data Science", "Software Engineering", "Business Analytics", "Data Analytics", "DevOps", "Cloud Infrastructure", "AI Research", "Financial Analysis"
+    - skills: Identify required and preferred skills
+    - qualifications: Identify core responsibilities and duties of the role. Identify minimum educational requirements and preferred experience and level.
+    - location: 
+    - preferences: schedule, location (on-site, hybrid, remote, city/region), and company culture (values, work environment, team dynamics)
+    - growth potential: assess the job's growth potential and how well the role aligns with typical career path and industry fit. For junior role: Look for collaborative environments, clear career paths, and roles with varied tasks for skill development. Mid-Level: Seek opportunities for increased responsibility, specialized skill development, and high-impact projects with recognition. Senior: Focus on leadership roles, strategic impact on business goals, and autonomy to drive innovation within the organization.
+    job description text:
+    """
+
+    request_payload = prompt + jd_text
+    send_log(f"Gemini API Request Payload: \n{request_payload}")
+    response_data = requestGeminiAPI(request_payload)
+    return response_data

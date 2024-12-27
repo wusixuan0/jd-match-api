@@ -42,3 +42,20 @@ def match_and_rank(resume_summary, job_summaries, model_name, top_n=5, version='
     pay_load = prompt + match_data
     response_data = requestGeminiAPI(pay_load, model_name)
     return response_data
+
+def select_candidate(jd, resume_dict, model_name, top_n=5):
+    prompt = f"""
+    Given a job description summary and dictionary of {len(jd)} resumes where keys are unique resume IDs and values are summaries. Rank the top {top_n} matches of resume based on qualification and suitability to the job description summary.
+    Output an array ONLY of resume IDs (as provided in the input) in descending order of the qualitative match, in the following format: [resume_id_1, resume_id_2, resume_id_3, ...]
+    Output example: [List of resume IDs (as provided in the input) in a JSON array format]
+    Prioritize matching accuracy, context awareness, preference handling.
+    """
+    match_data = f"""
+        job description summary:{jd}
+        dictionary of resumes:{resume_dict}
+    """       
+    send_log(f"Gemini API Request Prompt: \n{prompt}")
+    send_log(f"match data in Gemini API pay load has {len(match_data)} character.")
+    pay_load = prompt + match_data
+    response_data = requestGeminiAPI(pay_load, model_name)
+    return response_data
